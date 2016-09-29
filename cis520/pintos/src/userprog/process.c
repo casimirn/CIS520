@@ -66,23 +66,6 @@ start_process (void *file_name_)
   if (!success) 
     thread_exit ();
 
-  int8_t** esp = &if_.esp;
-  
-  //Tokenizing string
-  char *token, *save_ptr;
-  char* args[128];
-  int i = 0;
-
-  for (token = strtok_r (file_name_, " ", &save_ptr); token != NULL;
-       token = strtok_r (NULL, " ", &save_ptr))
-  {
-	  /*--esp = token;*/
-      args[i++] = token;
-  }
-  
-  for (; i >=0; i--)
-    *--esp = args[i]; // pushing each arg to the stack
-
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its
@@ -324,6 +307,21 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
+  
+    //Tokenizing string
+  char *token, *save_ptr;
+  char* args[128];
+  int pos = 0;
+
+  for (token = strtok_r (file_name, " ", &save_ptr); token != NULL;
+       token = strtok_r (NULL, " ", &save_ptr))
+  {
+	  /*--esp = token;*/
+      args[pos++] = token;
+  }
+  
+  for (; pos >=0; pos--)
+    *--esp = args[pos]; // pushing each arg to the stack
 
   success = true;
 
