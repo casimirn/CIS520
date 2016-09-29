@@ -38,20 +38,6 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
   
-  //Tokenizing string
-  char *token, *save_ptr;
-  char* args[128];
-  int i = 0;
-
-  for (token = strtok_r (fn_copy, " ", &save_ptr); token != NULL;
-       token = strtok_r (NULL, " ", &save_ptr))
-  {
-      args[i++] = token;
-  }
-  
-  for (; i >=0; i--)
-    *--sp = args[i]; // pushing each arg to the stack
-  
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
@@ -79,6 +65,23 @@ start_process (void *file_name_)
   palloc_free_page (file_name);
   if (!success) 
     thread_exit ();
+
+  int8_t** esp = &if_.esp;
+  
+  //Tokenizing string
+  char *token, *save_ptr;
+  char* args[128];
+  int i = 0;
+
+  for (token = strtok_r (file_name_, " ", &save_ptr); token != NULL;
+       token = strtok_r (NULL, " ", &save_ptr))
+  {
+	  /*--esp = token;*/
+      args[i++] = token;
+  }
+  
+  for (; i >=0; i--)
+    *--esp = args[i]; // pushing each arg to the stack
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
